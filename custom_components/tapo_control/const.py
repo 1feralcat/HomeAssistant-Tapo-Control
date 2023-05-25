@@ -50,6 +50,13 @@ UPDATE_CHECK_PERIOD = 86400
 
 COLD_DIR_DELETE_TIME = 24 * 60 * 60
 HOT_DIR_DELETE_TIME = 60 * 60
+SERVICE_PTZ = "ptz"
+SCHEMA_SERVICE_PTZ = {
+    vol.Optional(TILT): vol.In(["UP", "DOWN"]),
+    vol.Optional(PAN): vol.In(["RIGHT", "LEFT"]),
+    vol.Optional(PRESET): cv.string,
+    vol.Optional(DISTANCE): cv.string,
+}
 
 SERVICE_SAVE_PRESET = "save_preset"
 SCHEMA_SERVICE_SAVE_PRESET = {
