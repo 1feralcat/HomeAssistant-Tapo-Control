@@ -67,3 +67,14 @@ SERVICE_DELETE_PRESET = "delete_preset"
 SCHEMA_SERVICE_DELETE_PRESET = {
     vol.Required(PRESET): cv.string,
 }
+
+SERVICE_DOWNLOAD_RECORDINGS = "download_recordings"
+SCHEMA_SERVICE_DOWNLOAD_RECORDINGS = {
+    vol.Required("date"): cv.string,
+    vol.Required("filename_prefix"): cv.string,
+}
+SERVICE_DOWNLOAD_RECORDINGS_SYNC = "download_recordings_sync"
+SCHEMA_SERVICE_DOWNLOAD_RECORDINGS_SYNC = {
+    vol.Required("date"): cv.string,
+    vol.Required("filename_prefix"): cv.string,
+}

@@ -18,6 +18,7 @@ from homeassistant.helpers.aiohttp_client import async_aiohttp_proxy_stream
 from homeassistant.helpers.config_validation import boolean
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util import slugify
+from pytapo.media_stream.downloader import Downloader
 
 from .const import (
     CONF_RTSP_TRANSPORT,
@@ -28,12 +29,16 @@ from .const import (
     SCHEMA_SERVICE_SAVE_PRESET,
     SERVICE_DELETE_PRESET,
     SCHEMA_SERVICE_DELETE_PRESET,
+    SERVICE_DOWNLOAD_RECORDINGS,
+    SCHEMA_SERVICE_DOWNLOAD_RECORDINGS,
+    SERVICE_DOWNLOAD_RECORDINGS_SYNC,
+    SCHEMA_SERVICE_DOWNLOAD_RECORDINGS_SYNC,
     DOMAIN,
     LOGGER,
     NAME,
     BRAND,
 )
-from .utils import build_device_info, getStreamSource
+from .utils import build_device_info, getStreamSource, downloadRecordings
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -58,6 +63,16 @@ async def async_setup_entry(
         SERVICE_DELETE_PRESET,
         SCHEMA_SERVICE_DELETE_PRESET,
         "delete_preset",
+    )
+    platform.async_register_entity_service(
+        SERVICE_DOWNLOAD_RECORDINGS,
+        SCHEMA_SERVICE_DOWNLOAD_RECORDINGS,
+        "download_recordings",
+    )
+    platform.async_register_entity_service(
+        SERVICE_DOWNLOAD_RECORDINGS_SYNC,
+        SCHEMA_SERVICE_DOWNLOAD_RECORDINGS_SYNC,
+        "download_recordings_sync",
     )
 
     hdStream = TapoCamEntity(hass, config_entry, entry, True)
@@ -326,3 +341,12 @@ class TapoCamEntity(Camera):
                 await self._coordinator.async_request_refresh()
             else:
                 LOGGER.error("Preset " + preset + " does not exist.")
+
+    async def download_recordings(self, date, filename_prefix):
+        await downloadRecordings(self.hass, self._controller, date, filename_prefix);
+    
+    def download_recordings_sync(self, date, filename_prefix):
+        asyncio.run_coroutine_threadsafe(
+            downloadRecordings(self.hass, self._controller, date, filename_prefix), self.hass.loop
+        ).result()
+

@@ -9,6 +9,7 @@ import socket
 import time
 import urllib.parse
 import uuid
+import tzlocal
 from homeassistant.core import HomeAssistant
 from pytapo.media_stream.downloader import Downloader
 from homeassistant.components.media_source.error import Unresolvable
@@ -203,6 +204,45 @@ async def getRecording(
     fileWebPath = hotFilePath[hotFilePath.index("/www/") + 5 :]  # remove ./www/
 
     return f"/local/{fileWebPath}"
+
+
+async def downloadRecordings(
+    hass: HomeAssistant,
+    tapo: Tapo,
+    date: str,
+    filename_prefix: str):
+    if date == 'today':
+        date = datetime.datetime.now().strftime("%Y%m%d")
+    elif date == 'yesterday':
+        date = (datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y%m%d")
+
+    try:
+        recordings = await hass.async_add_executor_job(tapo.getRecordings, date)
+        tz_offset = datetime.datetime.now(tzlocal.get_localzone()).utcoffset().total_seconds();
+        for recording in recordings:
+            for key in recording:
+                startTime = recording[key]["startTime"]
+                endTime = recording[key]["endTime"]
+                dateStart = datetime.datetime.utcfromtimestamp(int(startTime+tz_offset)).strftime("%Y%m%d/%H%M%S")
+                dateEnd = datetime.datetime.utcfromtimestamp(int(endTime+tz_offset)).strftime("%H%M%S")
+                fileName = dateStart + "_" + dateEnd + ".mp4"
+                path = pathlib.Path(filename_prefix + fileName)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                downloader = Downloader(
+                    tapo,
+                    recording[key]["startTime"],
+                    recording[key]["endTime"],
+                    filename_prefix,
+                    None,
+                    False,
+                    None,
+                    fileName,
+                )
+                await downloader.downloadFile(processDownload)
+
+    except Exception as e:
+        LOGGER.error('Date ' + date + " filename_prefix " + filename_prefix);
+        LOGGER.error(e)
 
 
 def areCameraPortsOpened(host):

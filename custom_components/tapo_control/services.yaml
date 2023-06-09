@@ -55,3 +55,48 @@ delete_preset:
       name: Name
       selector:
         text:
+
+download_recordings:
+  name: Download recordings
+  description: Download recordings from camera
+  target:
+    entity:
+      domain: camera
+      integration: tapo_control
+  fields:
+    date:
+      description: "Date of recordings to download: YYYYMMDD, today, yesterday"
+      example: "yesterday"
+      required: true
+      name: Date
+      selector:
+        text:
+    filename_prefix:
+      description: "File name prefix"
+      example: "/media/camera1_"
+      required: true
+      name: File Name
+      selector:
+        text:
+download_recordings_sync:
+  name: Download recordings
+  description: Sync version of download recordings from camera
+  target:
+    entity:
+      domain: camera
+      integration: tapo_control
+  fields:
+    date:
+      description: "Date of recordings to download: YYYYMMDD, today, yesterday"
+      example: "yesterday"
+      required: true
+      name: Date
+      selector:
+        text:
+    filename_prefix:
+      description: "File name prefix"
+      example: "/media/camera1_"
+      required: true
+      name: File Name
+      selector:
+        text:
