@@ -129,16 +129,20 @@ def getHotDirPathForEntry(hass: HomeAssistant, entry_id: str):
 
 async def getRecordings(hass, entry_id, date):
     tapoController: Tapo = hass.data[DOMAIN][entry_id]["controller"]
+    LOGGER.debug("Getting recordings for date " + date + "...")
     recordingsForDay = await hass.async_add_executor_job(
         tapoController.getRecordings, date
     )
-    for recording in recordingsForDay:
-        for recordingKey in recording:
-            hass.data[DOMAIN][entry_id]["mediaScanResult"][
-                str(recording[recordingKey]["startTime"])
-                + "-"
-                + str(recording[recordingKey]["endTime"])
-            ] = True
+    if recordingsForDay is not None:
+        for recording in recordingsForDay:
+            for recordingKey in recording:
+                hass.data[DOMAIN][entry_id]["mediaScanResult"][
+                    str(recording[recordingKey]["startTime"])
+                    + "-"
+                    + str(recording[recordingKey]["endTime"])
+                ] = True
+    else:
+        recordingsForDay = []
     return recordingsForDay
 
 
@@ -153,10 +157,13 @@ async def findMedia(hass, entry):
     mediaScanResult = {}
     for searchResult in recordingsList:
         for key in searchResult:
+            LOGGER.debug(f"Getting media for day {searchResult[key]['date']}...")
             recordingsForDay = await getRecordings(
                 hass, entry_id, searchResult[key]["date"]
             )
-            LOGGER.debug(f"Getting media for day {searchResult[key]['date']}...")
+            LOGGER.debug(
+                f"Looping through recordings for day {searchResult[key]['date']}..."
+            )
             for recording in recordingsForDay:
                 for recordingKey in recording:
                     filePathVideo = getColdFile(
@@ -655,6 +662,9 @@ async def getCamData(hass, controller):
             "motion_det"
         ]
         motion_detection_enabled = motionDetectionData["enabled"]
+        motion_detection_digital_sensitivity = motionDetectionData[
+            "digital_sensitivity"
+        ]
         if motionDetectionData["digital_sensitivity"] == "20" or (
             "sensitivity" in motionDetectionData
             and motionDetectionData["sensitivity"] == "low"
@@ -675,8 +685,12 @@ async def getCamData(hass, controller):
     except Exception:
         motion_detection_enabled = None
         motion_detection_sensitivity = None
+        motion_detection_digital_sensitivity = None
     camData["motion_detection_enabled"] = motion_detection_enabled
     camData["motion_detection_sensitivity"] = motion_detection_sensitivity
+    camData[
+        "motion_detection_digital_sensitivity"
+    ] = motion_detection_digital_sensitivity
 
     try:
         personDetectionData = data["getPersonDetectionConfig"]["people_detection"][
@@ -858,6 +872,22 @@ async def getCamData(hass, controller):
     camData["privacy_mode"] = privacy_mode
 
     try:
+        notifications = data["getMsgPushConfig"]["msg_push"]["chn1_msg_push_info"][
+            "notification_enabled"
+        ]
+    except Exception:
+        notifications = None
+    camData["notifications"] = notifications
+
+    try:
+        rich_notifications = data["getMsgPushConfig"]["msg_push"]["chn1_msg_push_info"][
+            "rich_notification_enabled"
+        ]
+    except Exception:
+        rich_notifications = None
+    camData["rich_notifications"] = rich_notifications
+
+    try:
         lens_distrotion_correction = data["getLdc"]["image"]["switch"]["ldc"]
     except Exception:
         lens_distrotion_correction = None
@@ -979,6 +1009,28 @@ async def getCamData(hass, controller):
     except Exception:
         childDevices = None
     camData["childDevices"] = childDevices
+
+    try:
+        whitelampConfigForceTime = data["getWhitelampConfig"]["image"]["switch"][
+            "wtl_force_time"
+        ]
+    except Exception:
+        whitelampConfigForceTime = None
+    camData["whitelampConfigForceTime"] = whitelampConfigForceTime
+
+    try:
+        whitelampConfigIntensity = data["getWhitelampConfig"]["image"]["switch"][
+            "wtl_intensity_level"
+        ]
+    except Exception:
+        whitelampConfigIntensity = None
+    camData["whitelampConfigIntensity"] = whitelampConfigIntensity
+
+    try:
+        whitelampStatus = data["getWhitelampStatus"]["status"]
+    except Exception:
+        whitelampStatus = None
+    camData["whitelampStatus"] = whitelampStatus
 
     LOGGER.debug("getCamData - done")
     LOGGER.debug("Processed update data:")
@@ -1176,6 +1228,12 @@ def build_device_info(attributes: dict) -> DeviceInfo:
 def pytapoFunctionMap(pytapoFunctionName):
     if pytapoFunctionName == "getPrivacyMode":
         return ["getLensMaskConfig"]
+    elif pytapoFunctionName == "getNotificationsEnabled":
+        return ["getMsgPushConfig"]
+    elif pytapoFunctionName == "getWhitelampStatus":
+        return ["getWhitelampStatus"]
+    elif pytapoFunctionName == "getWhitelampConfig":
+        return ["getWhitelampConfig"]
     elif pytapoFunctionName == "getBasicInfo":
         return ["getDeviceInfo"]
     elif pytapoFunctionName == "getMotionDetection":
