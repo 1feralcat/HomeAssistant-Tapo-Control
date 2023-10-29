@@ -42,11 +42,12 @@ This custom component creates:
 - Binary sensor for motion after the motion is detected for the first time
 - Light entity, if the camera supports a floodlight switch
 - Buttons for Calibrate, Format, Manual Alarm start & stop, Moving the camera, Reboot and syncing time
-- Switch entities for auto track, Flip setting, LED Indicator, Lens Distortion Correction, (Rich) Notifications and Privacy mode
+- Switch entities for Auto track, Flip setting, LED Indicator, Lens Distortion Correction, (Rich) Notifications, Recording and Privacy mode
 - Select entities for Automatic Alarm, Light Frequency, Motion Detection, Night Vision and Move to Preset
 - Number entity for Movement Angle and Motion Detection Digital Sensitivity
 - Media Source for browsing and playing recordings stored on camera
 - Sensor entity that reports monitor media sync status
+- Sensor entities for Storage diagnostics
 - And finally 2 tapo_control.\* services to control a camera
 
 Use these services in following service calls.
@@ -170,9 +171,11 @@ Users reported full functionality with following Tapo Cameras:
 - C110
 - C200
 - C210
+- C220
 - C225
 - C310
 - C320WS
+- C520WS
 
 The integration _should_ work with any other non-battery Tapo Cameras.
 

@@ -1032,6 +1032,20 @@ async def getCamData(hass, controller):
         whitelampStatus = None
     camData["whitelampStatus"] = whitelampStatus
 
+    try:
+        sdCardData = []
+        for hdd in data["getSdCardStatus"]["harddisk_manage"]["hd_info"]:
+            sdCardData.append(hdd["hd_info_1"])
+    except Exception:
+        sdCardData = []
+    camData["sdCardData"] = sdCardData
+
+    try:
+        recordPlan = data["getRecordPlan"]["record_plan"]["chn1_channel"]
+    except Exception:
+        recordPlan = None
+    camData["recordPlan"] = recordPlan
+
     LOGGER.debug("getCamData - done")
     LOGGER.debug("Processed update data:")
     LOGGER.debug(camData)
@@ -1232,6 +1246,8 @@ def pytapoFunctionMap(pytapoFunctionName):
         return ["getMsgPushConfig"]
     elif pytapoFunctionName == "getWhitelampStatus":
         return ["getWhitelampStatus"]
+    elif pytapoFunctionName == "getRecordPlan":
+        return ["getRecordPlan"]
     elif pytapoFunctionName == "getWhitelampConfig":
         return ["getWhitelampConfig"]
     elif pytapoFunctionName == "getBasicInfo":
