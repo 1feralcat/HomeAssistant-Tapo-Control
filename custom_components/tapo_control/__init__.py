@@ -15,6 +15,7 @@ from homeassistant.const import (
 from homeassistant.exceptions import (
     ConfigEntryNotReady,
     ConfigEntryAuthFailed,
+    DependencyError,
 )
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.util import dt
@@ -44,6 +45,7 @@ from .const import (
     SOUND_DETECTION_RESET,
     TIME_SYNC_PERIOD,
     UPDATE_CHECK_PERIOD,
+    PYTAPO_REQUIRED_VERSION,
 )
 from .utils import (
     convert_to_timestamp,
@@ -64,6 +66,7 @@ from .utils import (
     getRecordings,
 )
 from pytapo import Tapo
+from pytapo.version import PYTAPO_VERSION
 
 from homeassistant.helpers.event import async_track_time_interval
 from datetime import timedelta
@@ -284,6 +287,13 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    if PYTAPO_REQUIRED_VERSION != PYTAPO_VERSION:
+        raise DependencyError(
+            [
+                f"Incorrect pytapo version installed: {PYTAPO_VERSION}. Required: {PYTAPO_REQUIRED_VERSION}."
+            ]
+        )
+
     """Set up the Tapo: Cameras Control component from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
@@ -293,6 +303,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     motionSensor = entry.data.get(ENABLE_MOTION_SENSOR)
     cloud_password = entry.data.get(CLOUD_PASSWORD)
     enableTimeSync = entry.data.get(ENABLE_TIME_SYNC)
+
+    if entry.entry_id not in hass.data[DOMAIN]:
+        hass.data[DOMAIN][entry.entry_id] = {}
+        if "setup_retries" not in hass.data[DOMAIN][entry.entry_id]:
+            hass.data[DOMAIN][entry.entry_id]["setup_retries"] = 0
 
     if isUsingHTTPS(hass):
         LOGGER.warn(
@@ -434,11 +449,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                         updateDataForAllControllers[controller] = await getCamData(
                             hass, controller
                         )
+                        hass.data[DOMAIN][entry.entry_id]["reauth_retries"] = 0
                     except Exception as e:
                         updateDataForAllControllers[controller] = False
                         if str(e) == "Invalid authentication data":
-                            hass.data[DOMAIN][entry.entry_id]["refreshEnabled"] = False
-                            raise ConfigEntryAuthFailed(e)
+                            if hass.data[DOMAIN][entry.entry_id]["reauth_retries"] < 3:
+                                hass.data[DOMAIN][entry.entry_id]["reauth_retries"] += 1
+                                raise e
+                            else:
+                                hass.data[DOMAIN][entry.entry_id][
+                                    "refreshEnabled"
+                                ] = False
+                                raise ConfigEntryAuthFailed(e)
                         LOGGER.error(e)
 
                 hass.data[DOMAIN][entry.entry_id][
@@ -536,6 +558,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         currentTS = dt.as_timestamp(dt.now())
 
         hass.data[DOMAIN][entry.entry_id] = {
+            "setup_retries": 0,
+            "reauth_retries": 0,
             "runningMediaSync": False,
             "controller": tapoController,
             "entry": entry,
@@ -757,17 +781,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, unsubscribe)
 
     except Exception as e:
-        LOGGER.error(
-            "Unable to connect to Tapo: Cameras Control controller: %s", str(e)
-        )
         if "Invalid authentication data" in str(e):
+            if hass.data[DOMAIN][entry.entry_id]["setup_retries"] < 3:
+                hass.data[DOMAIN][entry.entry_id]["setup_retries"] += 1
+                raise ConfigEntryNotReady(e)
             raise ConfigEntryAuthFailed(e)
-        elif "Temporary Suspension:" in str(
-            e
-        ):  # keep retrying to authenticate eventually, or throw
-            # ConfigEntryAuthFailed on invalid auth eventually
-            raise ConfigEntryNotReady
-        # Retry for anything else
-        raise ConfigEntryNotReady
+        else:
+            if "Temporary Suspension:" in str(
+                e
+            ):  # keep retrying to authenticate eventually, or throw
+                # ConfigEntryAuthFailed on invalid auth eventually
+                raise ConfigEntryNotReady(e)
+            # Retry for anything else
+            LOGGER.error(
+                "Unable to connect to Tapo: Cameras Control controller: %s", str(e)
+            )
+            raise ConfigEntryNotReady(e)
 
     return True
