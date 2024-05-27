@@ -2,6 +2,15 @@
 
 Custom component - Tapo: Cameras Control - to add Tapo cameras into Home Assistant
 
+# Firmware 1.3.8 (or build 230921) and newer might cause integration not to work
+
+There have been reports of users on firmwares 1.3.8, and newer, or on some cameras other firmwares with build 230921 and newer of integration stopping to work. If you wish to continue using this integration, until this issue is resolved, you will need to either:
+
+1. If your camera still works with integration: Block internet access of camera and stop using the official phone app temporarily if you are using firmware 1.3.8 (or build 230921 and higher)
+2. If your camera no longer works with integration: [Use older firmware](https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/issues/551#issuecomment-2061039421) than 1.3.8 (or build 230921) and factory reset camera
+
+Learn more and discuss at https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/issues/551 .
+
 ## Installation
 
 Copy contents of custom_components/tapo_control/ to custom_components/tapo_control/ in your Home Assistant config folder.
@@ -185,6 +194,18 @@ As well as:
 
 </details>
 
+<details>
+  <summary>I see error `Invalid cloud password. Invalid cloud password. Make sure you are entering the password for your cloud account and NOT the password which you created via the camera settings (unless they are the same). You need to enter password which you used with your email when signing into the Tapo app.` when I enter correct password</summary>
+
+  Try those troubleshooting options:
+
+  1. Make sure that "Two-Step Verification" for login is disabled. Go in the Tapo app > Me > View Account > Login Security > Turn off the "Two-Step Verification".
+  2. Reset your password.
+  3. Make sure your camera can access the internet.
+  4. Reboot your camera a few times.
+  5. Reset the camera. Remove it from your account, do a factory reset, add it back with internet access, add it back to the integration.
+
+</details>
 
 <details>
   <summary>Supported models</summary>
@@ -195,6 +216,7 @@ Users reported full functionality with following Tapo Cameras:
 - TC70
 - C100
 - C110
+- C120
 - C200
 - C210
 - C220
@@ -238,9 +260,20 @@ For webhooks to work, all the user needs to do is make sure he is using HA on HT
 </details>
 
 <details>
-  <summary>Is this integration free?</summary>
+  <summary>Is this integration free and fully local?</summary>
 
 Yes, the integration is free and does not require any paid subscriptions. It is also fully local requiring no internet access from the camera or this integration.
+
+</details>
+
+<details>
+  <summary>I receive Exception: Invalid authentication data when executing an automation / script</summary>
+
+Firmwares of cameras expect messages in sequential order. Sending them in parallel can lead to 401 code from camera which shows us with this exception.
+
+You will need to send the automation actions in sequence instead, possibly with delay as well if needed.
+
+See https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/issues/488 for more information.
 
 </details>
   

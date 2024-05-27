@@ -516,9 +516,11 @@ async def getRecording(
                 hass,
                 entry_id,
                 date,
-                len(allRecordings)
-                if totalRecordingCount is False
-                else totalRecordingCount,
+                (
+                    len(allRecordings)
+                    if totalRecordingCount is False
+                    else totalRecordingCount
+                ),
                 recordingCount if recordingCount is not False else False,
             )
         )
@@ -670,9 +672,9 @@ async def getCamData(hass, controller):
     camData["raw"] = data
 
     camData["user"] = controller.user
-    camData["basic_info"] = data["getDeviceInfo"]["device_info"]["basic_info"]
+    camData["basic_info"] = data["getDeviceInfo"][0]["device_info"]["basic_info"]
     try:
-        motionDetectionData = data["getDetectionConfig"]["motion_detection"][
+        motionDetectionData = data["getDetectionConfig"][0]["motion_detection"][
             "motion_det"
         ]
         motion_detection_enabled = motionDetectionData["enabled"]
@@ -702,12 +704,12 @@ async def getCamData(hass, controller):
         motion_detection_digital_sensitivity = None
     camData["motion_detection_enabled"] = motion_detection_enabled
     camData["motion_detection_sensitivity"] = motion_detection_sensitivity
-    camData[
-        "motion_detection_digital_sensitivity"
-    ] = motion_detection_digital_sensitivity
+    camData["motion_detection_digital_sensitivity"] = (
+        motion_detection_digital_sensitivity
+    )
 
     try:
-        personDetectionData = data["getPersonDetectionConfig"]["people_detection"][
+        personDetectionData = data["getPersonDetectionConfig"][0]["people_detection"][
             "detection"
         ]
         person_detection_enabled = personDetectionData["enabled"]
@@ -728,9 +730,9 @@ async def getCamData(hass, controller):
     camData["person_detection_sensitivity"] = person_detection_sensitivity
 
     try:
-        vehicleDetectionData = data["getVehicleDetectionConfig"]["vehicle_detection"][
-            "detection"
-        ]
+        vehicleDetectionData = data["getVehicleDetectionConfig"][0][
+            "vehicle_detection"
+        ]["detection"]
         vehicle_detection_enabled = vehicleDetectionData["enabled"]
         vehicle_detection_sensitivity = None
 
@@ -749,7 +751,7 @@ async def getCamData(hass, controller):
     camData["vehicle_detection_sensitivity"] = vehicle_detection_sensitivity
 
     try:
-        babyCryDetectionData = data["getBCDConfig"]["sound_detection"]["bcd"]
+        babyCryDetectionData = data["getBCDConfig"][0]["sound_detection"]["bcd"]
         babyCry_detection_enabled = babyCryDetectionData["enabled"]
         babyCry_detection_sensitivity = None
 
@@ -768,7 +770,9 @@ async def getCamData(hass, controller):
     camData["babyCry_detection_sensitivity"] = babyCry_detection_sensitivity
 
     try:
-        petDetectionData = data["getPetDetectionConfig"]["pet_detection"]["detection"]
+        petDetectionData = data["getPetDetectionConfig"][0]["pet_detection"][
+            "detection"
+        ]
         pet_detection_enabled = petDetectionData["enabled"]
         pet_detection_sensitivity = None
 
@@ -787,7 +791,7 @@ async def getCamData(hass, controller):
     camData["pet_detection_sensitivity"] = pet_detection_sensitivity
 
     try:
-        barkDetectionData = data["getBarkDetectionConfig"]["bark_detection"][
+        barkDetectionData = data["getBarkDetectionConfig"][0]["bark_detection"][
             "detection"
         ]
         bark_detection_enabled = barkDetectionData["enabled"]
@@ -808,7 +812,7 @@ async def getCamData(hass, controller):
     camData["bark_detection_sensitivity"] = bark_detection_sensitivity
 
     try:
-        meowDetectionData = data["getMeowDetectionConfig"]["meow_detection"][
+        meowDetectionData = data["getMeowDetectionConfig"][0]["meow_detection"][
             "detection"
         ]
         meow_detection_enabled = meowDetectionData["enabled"]
@@ -829,7 +833,7 @@ async def getCamData(hass, controller):
     camData["meow_detection_sensitivity"] = meow_detection_sensitivity
 
     try:
-        glassDetectionData = data["getGlassDetectionConfig"]["glass_detection"][
+        glassDetectionData = data["getGlassDetectionConfig"][0]["glass_detection"][
             "detection"
         ]
         glass_detection_enabled = glassDetectionData["enabled"]
@@ -850,7 +854,7 @@ async def getCamData(hass, controller):
     camData["glass_detection_sensitivity"] = glass_detection_sensitivity
 
     try:
-        tamperDetectionData = data["getTamperDetectionConfig"]["tamper_detection"][
+        tamperDetectionData = data["getTamperDetectionConfig"][0]["tamper_detection"][
             "tamper_det"
         ]
         tamper_detection_enabled = tamperDetectionData["enabled"]
@@ -871,14 +875,16 @@ async def getCamData(hass, controller):
 
     try:
         presets = {
-            id: data["getPresetConfig"]["preset"]["preset"]["name"][key]
-            for key, id in enumerate(data["getPresetConfig"]["preset"]["preset"]["id"])
+            id: data["getPresetConfig"][0]["preset"]["preset"]["name"][key]
+            for key, id in enumerate(
+                data["getPresetConfig"][0]["preset"]["preset"]["id"]
+            )
         }
     except Exception:
         presets = False
 
     try:
-        privacy_mode = data["getLensMaskConfig"]["lens_mask"]["lens_mask_info"][
+        privacy_mode = data["getLensMaskConfig"][0]["lens_mask"]["lens_mask_info"][
             "enabled"
         ]
     except Exception:
@@ -886,7 +892,7 @@ async def getCamData(hass, controller):
     camData["privacy_mode"] = privacy_mode
 
     try:
-        notifications = data["getMsgPushConfig"]["msg_push"]["chn1_msg_push_info"][
+        notifications = data["getMsgPushConfig"][0]["msg_push"]["chn1_msg_push_info"][
             "notification_enabled"
         ]
     except Exception:
@@ -894,27 +900,27 @@ async def getCamData(hass, controller):
     camData["notifications"] = notifications
 
     try:
-        rich_notifications = data["getMsgPushConfig"]["msg_push"]["chn1_msg_push_info"][
-            "rich_notification_enabled"
-        ]
+        rich_notifications = data["getMsgPushConfig"][0]["msg_push"][
+            "chn1_msg_push_info"
+        ]["rich_notification_enabled"]
     except Exception:
         rich_notifications = None
     camData["rich_notifications"] = rich_notifications
 
     try:
-        lens_distrotion_correction = data["getLdc"]["image"]["switch"]["ldc"]
+        lens_distrotion_correction = data["getLdc"][0]["image"]["switch"]["ldc"]
     except Exception:
         lens_distrotion_correction = None
     camData["lens_distrotion_correction"] = lens_distrotion_correction
 
     try:
-        light_frequency_mode = data["getLdc"]["image"]["common"]["light_freq_mode"]
+        light_frequency_mode = data["getLdc"][0]["image"]["common"]["light_freq_mode"]
     except Exception:
         light_frequency_mode = None
 
     if light_frequency_mode is None:
         try:
-            light_frequency_mode = data["getLightFrequencyInfo"]["image"]["common"][
+            light_frequency_mode = data["getLightFrequencyInfo"][0]["image"]["common"][
                 "light_freq_mode"
             ]
         except Exception:
@@ -922,24 +928,30 @@ async def getCamData(hass, controller):
     camData["light_frequency_mode"] = light_frequency_mode
 
     try:
-        day_night_mode = data["getLdc"]["image"]["common"]["inf_type"]
+        day_night_mode = data["getLdc"][0]["image"]["common"]["inf_type"]
     except Exception:
         day_night_mode = None
 
     if day_night_mode is None:
         try:
             if (
-                data["getNightVisionModeConfig"]["image"]["switch"]["night_vision_mode"]
+                data["getNightVisionModeConfig"][0]["image"]["switch"][
+                    "night_vision_mode"
+                ]
                 == "inf_night_vision"
             ):
                 day_night_mode = "on"
             elif (
-                data["getNightVisionModeConfig"]["image"]["switch"]["night_vision_mode"]
+                data["getNightVisionModeConfig"][0]["image"]["switch"][
+                    "night_vision_mode"
+                ]
                 == "wtl_night_vision"
             ):
                 day_night_mode = "off"
             elif (
-                data["getNightVisionModeConfig"]["image"]["switch"]["night_vision_mode"]
+                data["getNightVisionModeConfig"][0]["image"]["switch"][
+                    "night_vision_mode"
+                ]
                 == "md_night_vision"
             ):
                 day_night_mode = "auto"
@@ -948,7 +960,7 @@ async def getCamData(hass, controller):
     camData["day_night_mode"] = day_night_mode
 
     try:
-        force_white_lamp_state = data["getLdc"]["image"]["switch"]["force_wtl_state"]
+        force_white_lamp_state = data["getLdc"][0]["image"]["switch"]["force_wtl_state"]
     except Exception:
         force_white_lamp_state = None
     camData["force_white_lamp_state"] = force_white_lamp_state
@@ -956,7 +968,7 @@ async def getCamData(hass, controller):
     try:
         flip = (
             "on"
-            if data["getLdc"]["image"]["switch"]["flip_type"] == "center"
+            if data["getLdc"][0]["image"]["switch"]["flip_type"] == "center"
             else "off"
         )
     except Exception:
@@ -966,7 +978,8 @@ async def getCamData(hass, controller):
         try:
             flip = (
                 "on"
-                if data["getRotationStatus"]["image"]["switch"]["flip_type"] == "center"
+                if data["getRotationStatus"][0]["image"]["switch"]["flip_type"]
+                == "center"
                 else "off"
             )
         except Exception:
@@ -974,7 +987,7 @@ async def getCamData(hass, controller):
     camData["flip"] = flip
 
     try:
-        alarmData = data["getLastAlarmInfo"]["msg_alarm"]["chn1_msg_alarm_info"]
+        alarmData = data["getLastAlarmInfo"][0]["msg_alarm"]["chn1_msg_alarm_info"]
         alarm = alarmData["enabled"]
         alarm_mode = alarmData["alarm_mode"]
     except Exception:
@@ -983,7 +996,7 @@ async def getCamData(hass, controller):
 
     if alarm is None or alarm_mode is None:
         try:
-            alarmData = data["getAlarmConfig"]
+            alarmData = data["getAlarmConfig"][0]
             alarm = alarmData["enabled"]
             alarm_mode = alarmData["alarm_mode"]
         except Exception:
@@ -993,16 +1006,16 @@ async def getCamData(hass, controller):
     camData["alarm_mode"] = alarm_mode
 
     try:
-        led = data["getLedStatus"]["led"]["config"]["enabled"]
+        led = data["getLedStatus"][0]["led"]["config"]["enabled"]
     except Exception:
         led = None
     camData["led"] = led
 
     # todo rest
     try:
-        auto_track = data["getTargetTrackConfig"]["target_track"]["target_track_info"][
-            "enabled"
-        ]
+        auto_track = data["getTargetTrackConfig"][0]["target_track"][
+            "target_track_info"
+        ]["enabled"]
     except Exception:
         auto_track = None
     camData["auto_track"] = auto_track
@@ -1013,19 +1026,19 @@ async def getCamData(hass, controller):
         camData["presets"] = {}
 
     try:
-        firmwareUpdateStatus = data["getFirmwareUpdateStatus"]["cloud_config"]
+        firmwareUpdateStatus = data["getFirmwareUpdateStatus"][0]["cloud_config"]
     except Exception:
         firmwareUpdateStatus = None
     camData["firmwareUpdateStatus"] = firmwareUpdateStatus
 
     try:
-        childDevices = data["getChildDeviceList"]
+        childDevices = data["getChildDeviceList"][0]
     except Exception:
         childDevices = None
     camData["childDevices"] = childDevices
 
     try:
-        whitelampConfigForceTime = data["getWhitelampConfig"]["image"]["switch"][
+        whitelampConfigForceTime = data["getWhitelampConfig"][0]["image"]["switch"][
             "wtl_force_time"
         ]
     except Exception:
@@ -1033,7 +1046,7 @@ async def getCamData(hass, controller):
     camData["whitelampConfigForceTime"] = whitelampConfigForceTime
 
     try:
-        whitelampConfigIntensity = data["getWhitelampConfig"]["image"]["switch"][
+        whitelampConfigIntensity = data["getWhitelampConfig"][0]["image"]["switch"][
             "wtl_intensity_level"
         ]
     except Exception:
@@ -1041,27 +1054,27 @@ async def getCamData(hass, controller):
     camData["whitelampConfigIntensity"] = whitelampConfigIntensity
 
     try:
-        whitelampStatus = data["getWhitelampStatus"]["status"]
+        whitelampStatus = data["getWhitelampStatus"][0]["status"]
     except Exception:
         whitelampStatus = None
     camData["whitelampStatus"] = whitelampStatus
 
     try:
         sdCardData = []
-        for hdd in data["getSdCardStatus"]["harddisk_manage"]["hd_info"]:
+        for hdd in data["getSdCardStatus"][0]["harddisk_manage"]["hd_info"]:
             sdCardData.append(hdd["hd_info_1"])
     except Exception:
         sdCardData = []
     camData["sdCardData"] = sdCardData
 
     try:
-        recordPlan = data["getRecordPlan"]["record_plan"]["chn1_channel"]
+        recordPlan = data["getRecordPlan"][0]["record_plan"]["chn1_channel"]
     except Exception:
         recordPlan = None
     camData["recordPlan"] = recordPlan
 
     try:
-        microphoneVolume = data["getAudioConfig"]["audio_config"]["microphone"][
+        microphoneVolume = data["getAudioConfig"][0]["audio_config"]["microphone"][
             "volume"
         ]
     except Exception:
@@ -1069,13 +1082,13 @@ async def getCamData(hass, controller):
     camData["microphoneVolume"] = microphoneVolume
 
     try:
-        microphoneMute = data["getAudioConfig"]["audio_config"]["microphone"]["mute"]
+        microphoneMute = data["getAudioConfig"][0]["audio_config"]["microphone"]["mute"]
     except Exception:
         microphoneMute = None
     camData["microphoneMute"] = microphoneMute
 
     try:
-        microphoneNoiseCancelling = data["getAudioConfig"]["audio_config"][
+        microphoneNoiseCancelling = data["getAudioConfig"][0]["audio_config"][
             "microphone"
         ]["noise_cancelling"]
     except Exception:
@@ -1083,13 +1096,13 @@ async def getCamData(hass, controller):
     camData["microphoneNoiseCancelling"] = microphoneNoiseCancelling
 
     try:
-        speakerVolume = data["getAudioConfig"]["audio_config"]["speaker"]["volume"]
+        speakerVolume = data["getAudioConfig"][0]["audio_config"]["speaker"]["volume"]
     except Exception:
         speakerVolume = None
     camData["speakerVolume"] = speakerVolume
 
     try:
-        autoUpgradeEnabled = data["getFirmwareAutoUpgradeConfig"]["auto_upgrade"][
+        autoUpgradeEnabled = data["getFirmwareAutoUpgradeConfig"][0]["auto_upgrade"][
             "common"
         ]["enabled"]
     except Exception:
@@ -1097,7 +1110,7 @@ async def getCamData(hass, controller):
     camData["autoUpgradeEnabled"] = autoUpgradeEnabled
 
     try:
-        connectionInformation = data["getConnectionType"]
+        connectionInformation = data["getConnectionType"][0]
     except Exception:
         connectionInformation = None
     camData["connectionInformation"] = connectionInformation
@@ -1358,41 +1371,44 @@ def pytapoFunctionMap(pytapoFunctionName):
         return ["getAudioConfig"]
     elif pytapoFunctionName == "getFirmwareAutoUpgradeConfig":
         return ["getFirmwareAutoUpgradeConfig"]
+    elif pytapoFunctionName == "getSirenTypeList":
+        return ["getSirenTypeList"]
     return []
 
 
 def isCacheSupported(check_function, rawData):
     rawFunctions = pytapoFunctionMap(check_function)
     for function in rawFunctions:
-        if function in rawData and rawData[function]:
+        if function in rawData and rawData[function][0]:
             if check_function == "getForceWhitelampState":
                 return (
-                    "image" in rawData["getLdc"]
-                    and "switch" in rawData["getLdc"]["image"]
-                    and "force_wtl_state" in rawData["getLdc"]["image"]["switch"]
+                    "image" in rawData["getLdc"][0]
+                    and "switch" in rawData["getLdc"][0]["image"]
+                    and "force_wtl_state" in rawData["getLdc"][0]["image"]["switch"]
                 )
             elif check_function == "getDayNightMode":
                 return (
-                    "image" in rawData["getLightFrequencyInfo"]
-                    and "common" in rawData["getLightFrequencyInfo"]["image"]
+                    "image" in rawData["getLightFrequencyInfo"][0]
+                    and "common" in rawData["getLightFrequencyInfo"][0]["image"]
                     and "inf_type"
-                    in rawData["getLightFrequencyInfo"]["image"]["common"]
+                    in rawData["getLightFrequencyInfo"][0]["image"]["common"]
                 )
             elif check_function == "getImageFlipVertical":
                 return (
-                    "image" in rawData["getLdc"]
-                    and "switch" in rawData["getLdc"]["image"]
-                    and "flip_type" in rawData["getLdc"]["image"]["switch"]
+                    "image" in rawData["getLdc"][0]
+                    and "switch" in rawData["getLdc"][0]["image"]
+                    and "flip_type" in rawData["getLdc"][0]["image"]["switch"]
                 ) or (
-                    "image" in rawData["getRotationStatus"]
-                    and "switch" in rawData["getRotationStatus"]["image"]
-                    and "flip_type" in rawData["getRotationStatus"]["image"]["switch"]
+                    "image" in rawData["getRotationStatus"][0]
+                    and "switch" in rawData["getRotationStatus"][0]["image"]
+                    and "flip_type"
+                    in rawData["getRotationStatus"][0]["image"]["switch"]
                 )
             elif check_function == "getLensDistortionCorrection":
                 return (
-                    "image" in rawData["getLdc"]
-                    and "switch" in rawData["getLdc"]["image"]
-                    and "ldc" in rawData["getLdc"]["image"]["switch"]
+                    "image" in rawData["getLdc"][0]
+                    and "switch" in rawData["getLdc"][0]["image"]
+                    and "ldc" in rawData["getLdc"][0]["image"]["switch"]
                 )
             return True
     return False
