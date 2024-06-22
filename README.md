@@ -2,12 +2,14 @@
 
 Custom component - Tapo: Cameras Control - to add Tapo cameras into Home Assistant
 
-# Firmware 1.3.8 (or build 230921) and newer might cause integration not to work
+# Integration will / does not work temporarily on firmware build 230921 and higher
 
-There have been reports of users on firmwares 1.3.8, and newer, or on some cameras other firmwares with build 230921 and newer of integration stopping to work. If you wish to continue using this integration, until this issue is resolved, you will need to either:
+TP-Link is currently working on a new API solution that can be used by this integration in order to receive the new cloud issued token for the camera. 
 
-1. If your camera still works with integration: Block internet access of camera and stop using the official phone app temporarily if you are using firmware 1.3.8 (or build 230921 and higher)
-2. If your camera no longer works with integration: [Use older firmware](https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/issues/551#issuecomment-2061039421) than 1.3.8 (or build 230921) and factory reset camera
+If you wish to continue using this integration, until this issue is resolved, you will need to either:
+
+1. If your camera still works with integration: Block internet access of camera and stop using the official phone app temporarily if you are using firmware build 230921 and higher
+2. If your camera no longer works with integration: [Use older firmware](https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/issues/551#issuecomment-2061039421) than build 230921 and optionally factory reset camera
 
 Learn more and discuss at https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/issues/551 .
 
@@ -197,7 +199,9 @@ As well as:
 <details>
   <summary>I see error `Invalid cloud password. Invalid cloud password. Make sure you are entering the password for your cloud account and NOT the password which you created via the camera settings (unless they are the same). You need to enter password which you used with your email when signing into the Tapo app.` when I enter correct password</summary>
 
-  Try those troubleshooting options:
+  If you are using firmware build 230921 and higher, check issue https://github.com/JurajNyiri/HomeAssistant-Tapo-Control/issues/551.
+
+  Otherwise, try those troubleshooting options:
 
   1. Make sure that "Two-Step Verification" for login is disabled. Go in the Tapo app > Me > View Account > Login Security > Turn off the "Two-Step Verification".
   2. Reset your password.
